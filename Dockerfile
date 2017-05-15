@@ -19,7 +19,7 @@ RUN apt-get install -y curl grep sed dpkg && \
     rm tini.deb && \
     apt-get clean
 
-RUN apt-get install -y build-essential 
+RUN apt-get install -y build-essential
 RUN apt-get install -y cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
 RUN apt-get install -y python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
 RUN apt-get install -y libopenblas-dev libatlas-base-dev gfortran liblapacke-dev checkinstall build-essential cmake git pkg-config \
@@ -31,16 +31,15 @@ RUN apt-get install -y libopenblas-dev libatlas-base-dev gfortran liblapacke-dev
  libtheora-dev libvorbis-dev libxvidcore-dev v4l-utils
 ENV PATH /opt/conda/bin:$PATH
 RUN pip install numpy
-RUN wget https://github.com/opencv/opencv/archive/3.2.0.zip 
+RUN wget https://github.com/opencv/opencv/archive/3.2.0.zip
 RUN mv 3.2.0.zip opencv-3.2.0.zip
-RUN wget https://github.com/opencv/opencv_contrib/archive/3.2.0.zip 
+RUN wget https://github.com/opencv/opencv_contrib/archive/3.2.0.zip
 RUN mv 3.2.0.zip opencv-contrib-3.2.0.zip
-RUN unzip opencv-3.2.0.zip 
-RUN unzip opencv-contrib-3.2.0.zip 
+RUN unzip opencv-3.2.0.zip
+RUN unzip opencv-contrib-3.2.0.zip
 WORKDIR /opencv-3.2.0
 RUN mkdir build
 WORKDIR build
-
 
 RUN cmake -D CMAKE_BUILD_TYPE=RELEASE \
      -D CMAKE_INSTALL_PREFIX=/usr/local \
@@ -65,6 +64,4 @@ RUN pip install matplotlib
 COPY jupyter_notebook_config.py /root/.jupyter/
 CMD ["jupyter", "notebook", "--no-browser", "--allow-root"]
 
-
 #RUN apt-get clean
-

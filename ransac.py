@@ -142,21 +142,19 @@ def random_partition(n,n_data):
     idxs2 = all_idxs[n:]
     return idxs1, idxs2
 
-class LinModel:
-    def __init__(self,t=None,R=None):
+
+class LinearModel(object):
+    def __init__(self, t=None,R=None,debug= False):
+        self.debug = debug
         self.t=t
         self.R=R
-        
-class LinearModel:
-    def __init__(self, debug= False):
-        self.debug = debug
         
 
     def fit(self, from_points,to_points):
       
         t = numpy.zeros((1,from_points.shape[1]))
         R = numpy.eye(from_points.shape[1])
-        return LinModel(t,R)
+        return LinearModel(t,R)
         
     def get_error( self, from_points,to_points,model):
     
@@ -185,21 +183,21 @@ class LinearModel:
 class TranslationModel(LinearModel):
     """transform between two N dimensional vector spaces using a simple translation"""
     
-    def __init__(self, debug= False):
-        LinearModel.__init__(self,debug)
+    def __init__(self, *args, **kwargs):
+        super(TranslationModel,self).__init__(*args,**kwargs)
       
         
     def fit(self, from_points,to_points):
         
         t = numpy.mean(to_points-from_points,0);
         R = numpy.eye(from_points.shape[1]) 
-        return LinModel(t,R)
+        return LinearModel(t,R)
         
 class RigidModel(LinearModel):
     """transform between two N dimensional vector spaces using a rigid tranformation"""
     
-    def __init__(self, debug= False):
-        LinearModel.__init__(self,debug)
+    def __init__(self,*args, **kwargs):
+        super(RigidModel,self).__init__(*args,**kwargs)
             
     def fit(self, A,B):
         assert len(A) == len(B)
@@ -231,7 +229,7 @@ class RigidModel(LinearModel):
         t = -numpy.dot(R,centroid_A.T).T + centroid_B.T
         #print ("centroid_A",centroid_A)       
         #print ("t",t)
-        return LinModel(t,R)
+        return LinearModel(t,R)
         
 
        
@@ -239,22 +237,22 @@ class RigidModel(LinearModel):
 class SimilarityModel(LinearModel):
     """transform between two N dimensional vector spaces using a rigid tranformation"""
     
-    def __init__(self, debug= False):
-        LinearModel.__init__(self,debug)
+    def __init__(self,*args, **kwargs):
+        super(SimilarityModel,self).__init__(*args,**kwargs)
         
     def fit(self, from_points,to_points):
         
         t=numpy.mean(to_points-from_points,1);
         R = numpy.eye(from_points.shape[1]) 
-        return LinModel(t,R)
+        return LinearModel(t,R)
 
 
 class AffineModel(LinearModel):
 
-
-    def __init__(self, max_det_change=.25,debug= False):
+    def __init__(self, max_det_change=.25,max_shear_change=.15,*args,**kwargs):
+        super(AffineModel,self).__init__(*args,**kwargs)
         self.max_det_change=max_det_change
-        LinearModel.__init__(self,debug)
+        self.max_shear_change=max_shear_change
         
     def fit(self, A,B):
         assert len(A) == len(B)
@@ -275,13 +273,17 @@ class AffineModel(LinearModel):
         t=numpy.array([Tvec[4,0],Tvec[5,0]])
         R = numpy.array([[Tvec[0,0],Tvec[1,0]],[Tvec[2,0],Tvec[3,0]]])
         
-        return LinModel(t,R)
+        return LinearModel(t,R)
         
     def is_valid_transform(self,model):
         if numpy.abs(numpy.linalg.det(model.R)-1)>self.max_det_change:
             return False
         else:
-            return True
+            a,d,b = numpy.linalg.svd(model.R)
+            if(numpy.abs((d[0]/d[1])-1)>self.max_shear_change):
+                return False
+            else:
+                return True
         
         
 class LinearLeastSquaresModel:

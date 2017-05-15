@@ -1,4 +1,5 @@
-docker build -t fcollman/opencv .
+docker build -t floydhub/dl-docker:gpu -f Dockerfile.gpu .
 docker kill opencv
 docker rm opencv
-docker run -w /usr/local/newfeature -v ~/newfeature:/usr/local/newfeature -p 8888:8888 --name opencv -t fcollman/opencv 
+nvidia-docker run -w /usr/local/newfeature -p 8888:8888 -v /pipeline/ml-pointmatch:/usr/local/newfeature --name opencv -t floydhub/dl-docker:gpu  jupyter notebook --allow-root
+ 
